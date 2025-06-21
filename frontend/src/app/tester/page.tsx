@@ -15,7 +15,7 @@ type newsItem = {
 	link: string;
 };
 
-const Page = () => {
+const TestFetch = () => {
 	const [news, setNews] = useState<newsItem[] | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
@@ -78,4 +78,4 @@ const Page = () => {
 	);
 };
 
-export default Page;
+export default TestFetch;
