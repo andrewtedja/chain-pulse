@@ -29,7 +29,7 @@ const TestFetch = () => {
 				if (!res.ok) throw new Error("Failed to fetch");
 
 				const data = await res.json();
-				setNews(data.news);
+				setNews(data.news.reverse());
 			} catch (err: unknown) {
 				if (err instanceof Error) {
 					alert(err.message);
@@ -59,21 +59,33 @@ const TestFetch = () => {
 					)}
 					{news && (
 						<div className="bg-gray-100 p-2 rounded break-words">
-							<p>
+							<div>
 								{news.map((item) => {
 									return (
 										<div key={item.id} className="mt-4">
-											<p>News: {item.id}</p>
+											<h4 className="text-sm">
+												Published at:{" "}
+												{new Intl.DateTimeFormat(
+													"en-US",
+													{
+														timeStyle: "short",
+														dateStyle: "short",
+													}
+												).format(
+													new Date(item.published_at)
+												)}
+											</h4>
+											<h3>News: {item.id}</h3>
 											<h2 className="font-bold">
 												Title: {item.title}
 											</h2>
-											<p>
+											<h3>
 												Description: {item.description}
-											</p>
+											</h3>
 										</div>
 									);
 								})}
-							</p>
+							</div>
 						</div>
 					)}
 				</div>

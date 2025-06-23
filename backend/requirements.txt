@@ -34,7 +34,6 @@ decorator==5.1.1
 defusedxml==0.7.1
 distro==1.9.0
 dnspython==2.7.0
--e git+https://github.com/AndrewTedjapratama/tubes.git@44dcb453069bfff25562cfb7aca5ef33245f3703#egg=drew
 email_validator==2.2.0
 executing==2.0.1
 Faker==37.3.0
