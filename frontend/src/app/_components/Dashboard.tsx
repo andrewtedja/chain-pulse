@@ -16,9 +16,7 @@ const Dashboard = () => {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [processedData, setProcessedData] = useState<CoinSentiment[]>([]);
 
-	const [currentPage, setCurrentPage] = useState(1);
-	const itemsPerPage = 10;
-
+	// Fetch news/sentiment data
 	useEffect(() => {
 		const fetchSentimentData = async () => {
 			try {
@@ -37,6 +35,7 @@ const Dashboard = () => {
 		fetchSentimentData();
 	}, []);
 
+	// Refresh news
 	async function handleRefresh() {
 		try {
 			setIsRefreshing(true);
@@ -53,6 +52,7 @@ const Dashboard = () => {
 		}
 	}
 
+	// Process news data
 	const processSentimentData = (
 		newsData: SentimentItem[]
 	): CoinSentiment[] => {
@@ -92,17 +92,16 @@ const Dashboard = () => {
 		}
 	}, [sentimentData]);
 
-	// D3 Bubble Chart
+	//====================================== D3 ======================================
 	useEffect(() => {
 		if (!processedData.length) return;
 
 		const svg = d3.select(svgRef.current);
-		svg.selectAll("*").remove(); // Clear previous chart
+		svg.selectAll("*").remove();
 
-		// Responsive dimensions
-		const containerWidth = 800;
+		const containerWidth = 700;
 		const width = Math.min(containerWidth, window.innerWidth - 100);
-		const height = 500;
+		const height = 400;
 
 		svg.attr("width", width).attr("height", height);
 
@@ -110,7 +109,7 @@ const Dashboard = () => {
 		const colorScale = d3
 			.scaleLinear<string>()
 			.domain([-1, 0, 1])
-			.range(["#ff4444", "#666666", "#00ff88"]);
+			.range(["#ff3333", "#121212", "#52d769"]);
 
 		// Size scale based on news count
 		const extent = d3.extent(processedData, (d) => d.news_count);
@@ -120,7 +119,7 @@ const Dashboard = () => {
 		const sizeScale = d3
 			.scaleSqrt()
 			.domain(extent as [number, number])
-			.range([20, 80]);
+			.range([30, 80]);
 
 		// Prepare nodes for force simulation
 		const nodes: BubbleNode[] = processedData.map((d) => ({
@@ -153,12 +152,12 @@ const Dashboard = () => {
 			.style("padding", "12px")
 			.style("border-radius", "8px")
 			.style("font-size", "13px")
-			.style("border", "1px solid #333")
+			.style("border", "1px solid #FFF")
 			.style("pointer-events", "none")
 			.style("opacity", 0)
 			.style("z-index", 1000);
 
-		// Create bubble groups
+		// bubble groups
 		const bubbles = svg
 			.selectAll(".bubble")
 			.data(nodes)
@@ -167,16 +166,16 @@ const Dashboard = () => {
 			.attr("class", "bubble")
 			.style("cursor", "pointer");
 
-		// Add circles
+		// circles
 		bubbles
 			.append("circle")
 			.attr("r", (d: BubbleNode) => d.radius)
 			.attr("fill", (d: BubbleNode) => colorScale(d.sentiment_score))
-			.attr("stroke", "#333")
-			.attr("stroke-width", 2)
-			.style("opacity", 0.85);
+			.attr("stroke", "#888")
+			.attr("stroke-width", 1)
+			.style("opacity", 1);
 
-		// Add ticker text
+		// ticker text
 		bubbles
 			.append("text")
 			.attr("text-anchor", "middle")
@@ -187,19 +186,13 @@ const Dashboard = () => {
 			.text((d: BubbleNode) => d.ticker)
 			.style("pointer-events", "none");
 
-		// Add sentiment score text
+		// sentiment score text
 		bubbles
 			.append("text")
 			.attr("text-anchor", "middle")
 			.attr("dominant-baseline", "middle")
 			.attr("dy", (d: BubbleNode) => d.radius / 3.5)
-			.attr("fill", (d: BubbleNode) =>
-				d.sentiment_score > 0
-					? "#00ff88"
-					: d.sentiment_score < 0
-					? "#ff4444"
-					: "#888"
-			)
+			.attr("fill", "white")
 			.attr("font-size", (d: BubbleNode) => Math.min(d.radius / 3.5, 10))
 			.text((d: BubbleNode) =>
 				d.sentiment_score > 0
@@ -208,7 +201,7 @@ const Dashboard = () => {
 			)
 			.style("pointer-events", "none");
 
-		// Add hover effects
+		// hover effects
 		bubbles
 			.on(
 				"mouseover",
@@ -224,7 +217,7 @@ const Dashboard = () => {
 						.style("opacity", 1)
 						.html(
 							`
-						<strong>${d.name} (${d.ticker})</strong><br>
+						<strong>${d.name} </strong><br>
 						Sentiment Score: ${d.sentiment_score.toFixed(3)}<br>
 						News Articles: ${d.news_count}<br>
 						Sentiment: ${
@@ -232,7 +225,7 @@ const Dashboard = () => {
 								? "Bullish 🚀"
 								: d.sentiment_score < -0.1
 								? "Bearish 📉"
-								: "Neutral ⚖️"
+								: "Neutral"
 						}
 					`
 						)
@@ -248,7 +241,7 @@ const Dashboard = () => {
 						.transition()
 						.duration(200)
 						.attr("r", d.radius)
-						.style("opacity", 0.85);
+						.style("opacity", 0.9);
 
 					tooltip.style("opacity", 0);
 				}
@@ -261,7 +254,7 @@ const Dashboard = () => {
 						.select("circle")
 						.transition()
 						.duration(100)
-						.attr("r", d.radius * 0.9)
+						.attr("r", d.radius * 0.95)
 						.transition()
 						.duration(100)
 						.attr("r", d.radius);
@@ -275,7 +268,6 @@ const Dashboard = () => {
 				}
 			);
 
-		// Update positions on simulation tick
 		simulation.on("tick", () => {
 			bubbles.attr(
 				"transform",
@@ -283,24 +275,12 @@ const Dashboard = () => {
 			);
 		});
 
-		// Cleanup function
 		return () => {
 			tooltip.remove();
 		};
 	}, [processedData]);
 
-	// Pagination logic
-	const totalPages = sentimentData
-		? Math.ceil(sentimentData.length / itemsPerPage)
-		: 0;
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const currentNews = sentimentData
-		? sentimentData.slice(startIndex, startIndex + itemsPerPage)
-		: [];
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleString();
-	};
+	const currentNews = sentimentData ?? [];
 
 	const getSentimentLabel = (score: number) => {
 		if (score > 0.1)
@@ -327,14 +307,11 @@ const Dashboard = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-black text-white">
-			{/* Header */}
+		<div className="h-screen overflow-hidden bg-[#0d0d0e] text-white">
 			<div className="px-6 py-4 border-b border-gray-800">
 				<div className="flex justify-between items-center">
 					<div>
-						<h1 className="text-3xl font-bold">
-							🎭 Crypto Sentiment Dashboard
-						</h1>
+						<h1 className="text-3xl font-bold">ChainPulse</h1>
 						<p className="text-gray-400 mt-2">
 							Real-time sentiment analysis from crypto news
 						</p>
@@ -342,45 +319,45 @@ const Dashboard = () => {
 					<button
 						onClick={handleRefresh}
 						disabled={isRefreshing || isLoading}
-						className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg transition-colors"
+						className="cursor-pointer px-6 py-2 bg-[#f3eded] border  text-black hover:bg-[#c5c0c0] hover:text-black disabled:bg-slate-800 disabled:text-white rounded-lg transition-colors"
 					>
-						{isRefreshing ? "🔄 Refreshing..." : "🔄 Refresh Data"}
+						{isRefreshing ? "Refreshing..." : "Refresh Data"}
 					</button>
 				</div>
 			</div>
 
-			{/* Main Content - Split Layout */}
+			{/* Main */}
 			<div className="flex flex-col lg:flex-row h-full">
-				{/* Left Section - Bubble Chart */}
-				<div className="lg:w-3/5 p-6">
-					<div className="mb-4">
-						<h2 className="text-2xl font-bold mb-2">
-							Sentiment Bubbles
+				{/* Left Side (Chartnya) */}
+				<div className="lg:w-3/5 p-6 flex flex-col items-center">
+					<div className="mb-4 flex flex-col items-center">
+						<h2 className="text-2xl font-bold mb-3">
+							News Sentiment Bubbles
 						</h2>
 
 						{/* Legend */}
-						<div className="flex flex-wrap items-center justify-center lg:justify-start mb-4 space-x-6">
+						<div className="flex flex-wrap items-center justify-center lg:justify-start space-x-6">
 							<div className="flex items-center space-x-2">
 								<div className="w-4 h-4 bg-green-500 rounded-full"></div>
 								<span className="text-sm">Bullish</span>
 							</div>
 							<div className="flex items-center space-x-2">
-								<div className="w-4 h-4 bg-gray-500 rounded-full"></div>
+								<div className="w-4 h-4 bg-black border border-white rounded-full"></div>
 								<span className="text-sm">Neutral</span>
 							</div>
 							<div className="flex items-center space-x-2">
 								<div className="w-4 h-4 bg-red-500 rounded-full"></div>
 								<span className="text-sm">Bearish</span>
 							</div>
-							<div className="text-sm text-gray-400">
-								💡 Size = News volume
+							<div className="text-sm text-gray-300">
+								Size = News Volume
 							</div>
 						</div>
 					</div>
 
 					{/* Chart Container */}
-					<div className="flex justify-center">
-						<div className="relative bg-gray-900 rounded-lg p-4 shadow-xl">
+					<div className="flex justify-center items-center max-w-xl">
+						<div className="relative bg-slate-800 rounded-lg p-4 shadow-xl">
 							{isLoading && (
 								<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg z-10">
 									<div className="text-white text-center">
@@ -433,12 +410,11 @@ const Dashboard = () => {
 				</div>
 
 				{/* Right Section - News Feed */}
-				<div className="lg:w-2/5 border-l border-gray-800 p-6">
+				<div className="lg:w-1/2 border-l border-gray-800 p-6 overflow-auto pt-6 pb-20">
 					<div className="mb-4">
 						<h2 className="text-2xl font-bold mb-2">Latest News</h2>
 						<p className="text-gray-400 text-sm">
-							Page {currentPage} of {totalPages} (
-							{sentimentData?.length || 0} total articles)
+							{sentimentData?.length || 0} total articles
 						</p>
 					</div>
 
@@ -451,10 +427,10 @@ const Dashboard = () => {
 							return (
 								<div
 									key={news.id}
-									className="bg-gray-900 rounded-lg p-4 hover:bg-gray-800 transition-colors"
+									className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors"
 								>
 									<div className="flex justify-between items-start mb-2">
-										<span className="bg-blue-600 text-xs px-2 py-1 rounded">
+										<span className="bg-emerald-600 text-xs px-2 py-1 rounded">
 											{news.coin_ticker}
 										</span>
 										<span
@@ -469,14 +445,19 @@ const Dashboard = () => {
 									</h3>
 
 									{news.description && (
-										<p className="text-gray-400 text-xs mb-2 line-clamp-2">
+										<p className="text-gray-400 text-xs mb-2 line-clamp-1">
 											{news.description}
 										</p>
 									)}
 
 									<div className="flex justify-between items-center text-xs text-gray-500">
 										<span>
-											{formatDate(news.published_at)}
+											{new Intl.DateTimeFormat("en-US", {
+												timeStyle: "short",
+												dateStyle: "medium",
+											}).format(
+												new Date(news.published_at)
+											)}
 										</span>
 										<span
 											className={`font-mono ${
@@ -493,87 +474,10 @@ const Dashboard = () => {
 											{news.sentiment_score.toFixed(3)}
 										</span>
 									</div>
-
-									{news.link && (
-										<a
-											href={news.link}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-blue-400 hover:text-blue-300 text-xs mt-2 inline-block"
-										>
-											Read more →
-										</a>
-									)}
 								</div>
 							);
 						})}
 					</div>
-
-					{/* Pagination */}
-					{totalPages > 1 && (
-						<div className="flex justify-center items-center space-x-2">
-							<button
-								onClick={() =>
-									setCurrentPage((prev) =>
-										Math.max(1, prev - 1)
-									)
-								}
-								disabled={currentPage === 1}
-								className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded text-sm"
-							>
-								← Prev
-							</button>
-
-							<div className="flex space-x-1">
-								{Array.from(
-									{ length: Math.min(5, totalPages) },
-									(_, i) => {
-										let pageNum;
-										if (totalPages <= 5) {
-											pageNum = i + 1;
-										} else if (currentPage <= 3) {
-											pageNum = i + 1;
-										} else if (
-											currentPage >=
-											totalPages - 2
-										) {
-											pageNum = totalPages - 4 + i;
-										} else {
-											pageNum = currentPage - 2 + i;
-										}
-
-										return (
-											<button
-												key={pageNum}
-												onClick={() =>
-													setCurrentPage(pageNum)
-												}
-												className={`px-2 py-1 text-sm rounded ${
-													currentPage === pageNum
-														? "bg-blue-600 text-white"
-														: "bg-gray-700 hover:bg-gray-600"
-												}`}
-											>
-												{pageNum}
-											</button>
-										);
-									}
-								)}
-							</div>
-
-							<button
-								onClick={() =>
-									setCurrentPage((prev) =>
-										Math.min(totalPages, prev + 1)
-									)
-								}
-								disabled={currentPage === totalPages}
-								className="px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 rounded text-sm"
-							>
-								Next →
-							</button>
-						</div>
-					)}
 
 					{/* No data message */}
 					{!isLoading &&

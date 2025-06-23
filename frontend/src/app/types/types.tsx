@@ -6,7 +6,6 @@ export type SentimentItem = {
 	description?: string;
 	coin_ticker: string;
 	published_at: string;
-	link: string;
 	sentiment_score: number;
 };
 

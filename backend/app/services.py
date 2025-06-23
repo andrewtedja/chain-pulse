@@ -31,11 +31,11 @@ print("[BASE_URL] BASE_URL =", BASE_URL)
 params = {
     "auth_token": API_KEY,
     # "public": True,
-    "currencies": "BTC,ETH,SOL",
+    # "currencies": "BTC,ETH,SOL",
     "region": "en",
     "filter": "latest",
     "kind": "news",
-    "size": 100
+    # "size": 100
 }
 
 
