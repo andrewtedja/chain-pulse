@@ -3,8 +3,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 
+from database import SessionLocal, engine
+from sqlalchemy.orm import Session
+from fastapi import Depends
+
+from models import Base, News
+
 import requests
 import os
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 
 load_dotenv()
 API_KEY = os.getenv("CRYPTO_PANIC_API_KEY")
@@ -30,13 +45,10 @@ app.add_middleware(
 )
 
 @app.get("/api/news")
-def get_news():
-    try:
-        response = requests.get(BASE_URL, params=params)
-        response.raise_for_status()
-        data = response.json()
-        return {
-            "news": data.get("results", []),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def read_news(db: Session = Depends(get_db)):
+    news_items = db.query(News).all()
+    return {
+        "news": [item.__dict__ for item in news_items]
+    }
+
+Base.metadata.create_all(bind=engine)

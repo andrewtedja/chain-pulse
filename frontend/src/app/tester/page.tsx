@@ -30,9 +30,13 @@ const TestFetch = () => {
 
 				const data = await res.json();
 				setNews(data.news);
-			} catch (err: any) {
-				alert(err);
-				setError(err.message || "Unknown error");
+			} catch (err: unknown) {
+				if (err instanceof Error) {
+					alert(err.message);
+					setError(err.message);
+				} else {
+					setError("Unknown error");
+				}
 			} finally {
 				setLoading(false);
 			}
