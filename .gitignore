@@ -1,0 +1,38 @@
+# --- Python / FastAPI ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.log
+venv/
+.env
+.env.*
+
+# SQLite (for development)
+*.db
+*.sqlite3
+
+# --- Node.js / Next.js ---
+node_modules/
+.next/
+dist/
+out/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Optional: Vercel / Netlify
+.vercel/
+.netlify/
+
+# IDEs & OS files
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
+
+# GitHub Actions cache (optional, only if using workflows that generate cache)
+.github/cache/
