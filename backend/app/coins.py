@@ -51,3 +51,38 @@ COIN_KEYWORDS = {
     "VET": ["vechain", "vet"],
     "HBAR": ["hedera", "hbar"]
 }
+
+def identify_coins_in_text(text):
+    found_coins = set()
+    text_lower = text.lower()
+    for ticker, keywords in COIN_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in text_lower:
+                found_coins.add(ticker)
+                break # Lanjut ke ticker berikutnya jika sudah ketemu
+    return list(found_coins)
+
+
+# TESTING
+if __name__ == '__main__':
+    print("Unit Test untuk identify_coins_in_text")
+    
+    test_cases = [
+        ("Great news for bitcoin (BTC) investors!", ["BTC"]),
+        ("Ethereum and Ripple are soaring, but Solana faces issues.", ["ETH", "XRP", "SOL"]),
+        ("What is the future of dogecoin?", ["DOGE"]),
+        ("This article is about general market trends.", []),
+        ("ETH's new upgrade is live!", ["ETH"])
+    ]
+
+    for i, (text, expected) in enumerate(test_cases, 1):
+        result = identify_coins_in_text(text)
+        # Urutkan untuk perbandingan yang konsisten
+        result.sort()
+        expected.sort()
+        
+        status = "V PASS" if result == expected else "X FAIL"
+        print(f"\nTest Case #{i}: {status}")
+        print(f"  - Text: '{text}'")
+        print(f"  - Expected: {expected}")
+        print(f"  - Got: {result}")
