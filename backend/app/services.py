@@ -1,6 +1,8 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 from sqlalchemy.orm import Session
@@ -18,6 +20,55 @@ from .models import Base, News
 import requests
 import os
 
+load_dotenv()
+
+API_KEY = os.getenv("CRYPTO_PANIC_API_KEY")
+BASE_URL = os.getenv("CRYPTO_PANIC_BASE_URL")
+print("[KEY] API_KEY =", API_KEY)
+print("[BASE_URL] BASE_URL =", BASE_URL)
+
+# coin_list = ",".join(COIN_KEYWORDS.keys())
+params = {
+    "auth_token": API_KEY,
+    # "public": True,
+    "currencies": "BTC,ETH,SOL",
+    "region": "en",
+    "filter": "latest",
+    "kind": "news",
+    "size": 100
+}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    db = SessionLocal()
+    try:
+        news_items = fetch_crypto_news()
+        insert_news_to_db(news_items, db)
+    except Exception as e:
+        print("[LIFESPAN] Failed to fetch/insert news:", e)
+    finally:
+        db.close()
+    
+    yield  # App runs here
+
+    # Optional: teardown logic if needed
+
+
+
+app = FastAPI(lifespan=lifespan)
+router = APIRouter()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ================= DB =================
 def get_db():
     db = SessionLocal()
     try:
@@ -26,41 +77,7 @@ def get_db():
         db.close()
 
 
-
-load_dotenv()
-API_KEY = os.getenv("CRYPTO_PANIC_API_KEY")
-BASE_URL = os.getenv("CRYPTO_PANIC_BASE_URL")
-
-print("[KEY] API_KEY =", API_KEY)
-print("[BASE_URL] BASE_URL =", BASE_URL)
-
-coin_list = ",".join()(COIN_KEYWORDS.keys())
-
-
-params = {
-    "auth_token": API_KEY,
-    # "public": True,
-    "currencies": coin_list,
-    "region": "en",
-    "filter": "latest",
-    "kind": "news",
-    "size": 100
-}
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-
-
-# ================= DB =================
+# GET
 @app.get("/api/news")
 def read_news(db: Session = Depends(get_db)):
     news_items = db.query(News).all()
@@ -83,7 +100,6 @@ def fetch_crypto_news():
 def insert_news_to_db(news_list, db):
     # Limit 100 news (latest)
     news_list = news_list[:100] 
-    new_count = 0
 
     for news in news_list:
 
@@ -113,7 +129,6 @@ def insert_news_to_db(news_list, db):
                 sentiment_score=score
             )
             db.add(news_item)
-            new_count += 1
     try:
         db.commit()
     except Exception as e:
@@ -123,13 +138,14 @@ def insert_news_to_db(news_list, db):
     return {"[RESULTS] inserted": len(news_list)}
 
 
-# ================= POST -> Fetch + Insert to DB =================
-@app.post("/api/refresh-news")
+# POST 
+@router.post("/api/refresh-news")
 def refresh_news(db: Session = Depends(get_db)):
-    news = fetch_crypto_news()
-    insert_news_to_db(news, db)
-    return {"message": f"{len(news)} news saved to DB !!!"}
+    news_items = fetch_crypto_news()
+    result = insert_news_to_db(news_items, db)
+    return {"message": "News refreshed", **result}
 
 
-# ================= Run Table Create =================
+# ================= Table Init =================
 Base.metadata.create_all(bind=engine)
+app.include_router(router)
