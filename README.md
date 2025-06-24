@@ -75,7 +75,7 @@ pip install -r requirements.txt
 
 ```env
 CRYPTO_PANIC_API_KEY=your_api_key_here
-CRYPTO_PANIC_BASE_URL=https://cryptopanic.com/api/v1/posts/
+CRYPTO_PANIC_BASE_URL=https://cryptopanic.com/api/v2/posts/
 ```
 
 > **Note**: The CryptoPanicAPI key is limited and required to fetch news data from CryptoPanic, you can get it from https://cryptopanic.com/developers/api/ after you sign up (and add to the .env file).
