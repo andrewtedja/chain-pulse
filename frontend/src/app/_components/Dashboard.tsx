@@ -294,7 +294,7 @@ const Dashboard = () => {
 		return (
 			<div className="flex items-center justify-center min-h-screen bg-black text-white">
 				<div className="text-center">
-					<p className="text-red-400 mb-4">⚠️ {error}</p>
+					<p className="text-red-400 mb-4">{error}</p>
 					<button
 						onClick={() => window.location.reload()}
 						className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
@@ -307,7 +307,7 @@ const Dashboard = () => {
 	}
 
 	return (
-		<div className="h-screen overflow-hidden bg-[#0d0d0e] text-white">
+		<div className="h-screen overflow-hidden bg-[#11161d] text-white">
 			<div className="px-6 py-4 border-b border-gray-800">
 				<div className="flex justify-between items-center">
 					<div>

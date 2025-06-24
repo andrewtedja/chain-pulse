@@ -125,7 +125,6 @@ def insert_news_to_db(news_list, db):
                 description=news.get("description"),
                 coin_ticker = coin,
                 published_at=parser.parse(news.get("published_at")) if news.get("published_at") else None,
-                link=news.get("url"),
                 sentiment_score=score
             )
             db.add(news_item)

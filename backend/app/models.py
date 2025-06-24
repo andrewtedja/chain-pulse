@@ -7,7 +7,7 @@ class News(Base):
     __tablename__ = "news"
 
     id = Column(Integer, nullable=False)  
-    title = Column(String, unique=True)
+    title = Column(String)
     description = Column(String)
     coin_ticker = Column(String, nullable=False)
     published_at = Column(DateTime)
