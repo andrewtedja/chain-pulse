@@ -61,6 +61,9 @@ cd chain-pulse
 
 2. **Backend Setup**
    From root directory:
+```bash
+pnpm install # if want to concurrently running FE/BE
+```
 
 ```bash
 cd backend
