@@ -92,6 +92,18 @@ const Dashboard = () => {
 		}
 	}, [sentimentData]);
 
+	// Prediction Function
+	function predictPriceChange(sentimentScore: number): string {
+		const percent = (sentimentScore * 10).toFixed(2);
+		if (sentimentScore > 0.3) {
+			return `↑↑↑ Harga diperkirakan naik sebesar +${percent}%`;
+		} else if (sentimentScore < -0.3) {
+			return `↓↓↓ Harga diperkirakan turun sebesar ${percent}%`;
+		} else {
+			return `(O) Harga diperkirakan stabil`;
+		}
+	}
+
 	//====================================== D3 ======================================
 	useEffect(() => {
 		if (!processedData.length) return;
@@ -101,7 +113,7 @@ const Dashboard = () => {
 
 		const containerWidth = 700;
 		const width = Math.min(containerWidth, window.innerWidth - 100);
-		const height = 400;
+		const height = 500;
 
 		svg.attr("width", width).attr("height", height);
 
@@ -226,7 +238,8 @@ const Dashboard = () => {
 								: d.sentiment_score < -0.1
 								? "Bearish 📉"
 								: "Neutral"
-						}
+						}<br>
+						<b>${predictPriceChange(d.sentiment_score)}</b>
 					`
 						)
 						.style("left", event.pageX + 15 + "px")
@@ -307,19 +320,21 @@ const Dashboard = () => {
 	}
 
 	return (
-		<div className="h-screen overflow-hidden bg-[#11161d] text-white">
+		<div className="min-h-screen overflow-hidden bg-[#11161d] text-white">
 			<div className="px-6 py-4 border-b border-gray-800">
 				<div className="flex justify-between items-center">
 					<div>
 						<h1 className="text-3xl font-bold">ChainPulse</h1>
+
 						<p className="text-gray-400 mt-2">
-							Real-time sentiment analysis from crypto news
+							Real-time sentiment analysis for cryptocurrency
+							news, powered by string matching
 						</p>
 					</div>
 					<button
 						onClick={handleRefresh}
 						disabled={isRefreshing || isLoading}
-						className="cursor-pointer px-6 py-2 bg-[#f3eded] border  text-black hover:bg-[#c5c0c0] hover:text-black disabled:bg-slate-800 disabled:text-white rounded-lg transition-colors"
+						className="cursor-pointer px-6 py-2 bg-[#f3eded] border  text-black hover:bg-[#c5c0c0] hover:text-black disabled:bg-slate-800 disabled:text-white rounded-md transition-colors"
 					>
 						{isRefreshing ? "Refreshing..." : "Refresh Data"}
 					</button>
@@ -349,8 +364,11 @@ const Dashboard = () => {
 								<div className="w-4 h-4 bg-red-500 rounded-full"></div>
 								<span className="text-sm">Bearish</span>
 							</div>
-							<div className="text-sm text-gray-300">
-								Size = News Volume
+							<div className="flex items-center space-x-2">
+								<div className="w-4 h-4 bg-amber-400 "></div>
+								<span className="text-sm">
+									NOTE: Size = News Volume
+								</span>
 							</div>
 						</div>
 					</div>
@@ -372,7 +390,7 @@ const Dashboard = () => {
 
 					{/* Stats */}
 					{sentimentData && sentimentData.length > 0 && (
-						<div className="mt-6 grid grid-cols-3 gap-4">
+						<div className="mt-6 grid grid-cols-3 gap-4 w-full px-20">
 							<div className="bg-gray-800 p-4 rounded-lg text-center">
 								<div className="text-xl font-bold text-green-400">
 									{
@@ -410,7 +428,7 @@ const Dashboard = () => {
 				</div>
 
 				{/* Right Section - News Feed */}
-				<div className="lg:w-1/2 border-l border-gray-800 p-6 overflow-auto pt-6 pb-20">
+				<div className="lg:w-1/2 border-l border-gray-800 p-6  pt-6 pb-10">
 					<div className="mb-4">
 						<h2 className="text-2xl font-bold mb-2">Latest News</h2>
 						<p className="text-gray-400 text-sm">
@@ -419,7 +437,7 @@ const Dashboard = () => {
 					</div>
 
 					{/* News List */}
-					<div className="space-y-4 mb-6">
+					<div className="space-y-4 mb-6 overflow-y-scroll pr-2 flex-grow h-[80vh]">
 						{currentNews.map((news) => {
 							const sentiment = getSentimentLabel(
 								news.sentiment_score
@@ -427,7 +445,7 @@ const Dashboard = () => {
 							return (
 								<div
 									key={news.id}
-									className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors"
+									className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors shadow-xl"
 								>
 									<div className="flex justify-between items-start mb-2">
 										<span className="bg-emerald-600 text-xs px-2 py-1 rounded">
