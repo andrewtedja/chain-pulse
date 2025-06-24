@@ -55,7 +55,7 @@ ChainPulse is a full-stack web application that analyzes real-time cryptocurrenc
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/yourusername/chain-pulse.git
+git clone https://github.com/andrewtedja/chain-pulse.git
 cd chain-pulse
 ```
 
